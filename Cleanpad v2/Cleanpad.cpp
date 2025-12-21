@@ -201,6 +201,22 @@ bool Cleanpad::ProcessShortcuts(MSG* msg) {
 
     switch (msg->wParam) {
 
+    case 'S':
+    {
+        // 1. Check for SHIFT key
+        bool shift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+
+        // 2. If Shift is pressed, ALWAYS "Save As"
+        if (shift) {
+            PromptSaveAs();
+        }
+        // 3. Otherwise, do standard "Save" (Overwrite if file exists, else Save As)
+        else {
+            m_currentFilePath.empty() ? PromptSaveAs() : SaveFile(m_currentFilePath.c_str());
+        }
+        return true;
+    }
+
     case 'N': {
         // GET PATH TO MYSELF (The current .exe)
         wchar_t szExe[MAX_PATH];
@@ -215,7 +231,6 @@ bool Cleanpad::ProcessShortcuts(MSG* msg) {
         m_isAlwaysOnTop = !m_isAlwaysOnTop;
         SetWindowPos(m_hMain, m_isAlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         return true;
-    case 'S': m_currentFilePath.empty() ? PromptSaveAs() : SaveFile(m_currentFilePath.c_str()); return true;
     case 'O': PromptOpen(); return true;
     case 'A': SendMessage(m_hEdit, EM_SETSEL, 0, -1); return true;
     case 'B': ToggleFormatting(CFM_BOLD); return true;
