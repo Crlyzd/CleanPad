@@ -2,6 +2,7 @@ Windows Notepad is literally trash bro.. 😭😭😭
 Just use mine..
 
 Middle click at the Top Bar to drag the window
+
 CTRL+T to stay on TOP
 
 
