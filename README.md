@@ -5,6 +5,10 @@ Middle click at the Top Bar to drag the window
 
 CTRL+T to stay on TOP
 
+ESC to exit
+
+CTRL+N to open new instances off the app
+
 Text formatting support (Bold, Italic and Underline)
 
 You can paste image too, just don't save it lmao
