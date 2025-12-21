@@ -25,7 +25,8 @@ const COLORREF COL_MENU_SEL = RGB(80, 80, 80);
 Cleanpad::Cleanpad()
     : m_hMain(NULL), m_hEdit(NULL), m_hInst(NULL),
     m_hFontUI(NULL), m_hFontEdit(NULL),
-    m_isAlwaysOnTop(false), m_isDragging(false)
+    m_isAlwaysOnTop(false), m_isDragging(false),
+    m_dragStartPoint({ 0, 0 })
 {
     // Create Fonts immediately or in InitializeUI
     HDC hdc = GetDC(NULL);
@@ -221,9 +222,9 @@ int Cleanpad::Run(HINSTANCE hInstance, int nCmdShow) {
     HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 
     // Register Main Window Class
-    WNDCLASSEXW wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, WndProc, 0, 0, hInstance, 
+    WNDCLASSEXW wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, WndProc, 0, 0, hInstance,
                          hIcon, LoadCursor(NULL, IDC_ARROW), // <--- Uses hIcon
-                         CreateSolidBrush(COL_BG_MAIN), NULL, L"CleanpadClass", 
+                         CreateSolidBrush(COL_BG_MAIN), NULL, L"CleanpadClass",
                          hIcon }; // <--- Uses hIcon (Small)
     RegisterClassExW(&wcex);
 
@@ -249,6 +250,13 @@ int Cleanpad::Run(HINSTANCE hInstance, int nCmdShow) {
 
     ShowWindow(m_hMain, nCmdShow);
     UpdateWindow(m_hMain);
+    
+    int argc;
+    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    if (argc > 1) {
+        LoadFile(argv[1]);
+    }
+    LocalFree(argv);
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
@@ -431,8 +439,23 @@ LRESULT CALLBACK Cleanpad::MenuWndProc(HWND hWnd, UINT message, WPARAM wParam, L
         ReleaseCapture(); DestroyWindow(hWnd);
         break;
     }
-    case WM_LBUTTONDOWN: case WM_KEYDOWN: case WM_KILLFOCUS:
-        ReleaseCapture(); DestroyWindow(hWnd); break;
+    case WM_LBUTTONDOWN: {
+        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
+        RECT rc;
+        GetClientRect(hWnd, &rc);
+
+        if (!PtInRect(&rc, pt)) {
+            ReleaseCapture();
+            DestroyWindow(hWnd);
+        }
+        break;
+    }
+
+    case WM_KEYDOWN:
+    case WM_KILLFOCUS:
+        ReleaseCapture();
+        DestroyWindow(hWnd);
+        break;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -455,6 +478,13 @@ void Cleanpad::PromptSaveAs() {
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = L"Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0";
+
+    // NEW: Default extension if user types none
+    ofn.lpstrDefExt = L"txt";
+
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
-    if (GetSaveFileName(&ofn)) SaveFile(ofn.lpstrFile);
+
+    if (GetSaveFileName(&ofn)) {
+        SaveFile(ofn.lpstrFile);
+    }
 }
