@@ -4,7 +4,9 @@ Just use mine..
 Middle click at the Top Bar to drag the window
 
 CTRL+T to stay on TOP
+
 Text formatting support (Bold, Italic and Underline)
+
 You can paste Image too, just don't save it lmao
 
 
