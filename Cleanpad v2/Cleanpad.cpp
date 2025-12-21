@@ -200,6 +200,17 @@ bool Cleanpad::ProcessShortcuts(MSG* msg) {
     if (!ctrl) return false;
 
     switch (msg->wParam) {
+
+    case 'N': {
+        // GET PATH TO MYSELF (The current .exe)
+        wchar_t szExe[MAX_PATH];
+        if (GetModuleFileName(NULL, szExe, MAX_PATH)) {
+            // SPAWN NEW INSTANCE
+            ShellExecute(NULL, L"open", szExe, NULL, NULL, SW_SHOWNORMAL);
+        }
+        return true;
+    }
+
     case 'T':
         m_isAlwaysOnTop = !m_isAlwaysOnTop;
         SetWindowPos(m_hMain, m_isAlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
