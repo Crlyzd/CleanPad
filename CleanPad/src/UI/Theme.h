@@ -30,4 +30,7 @@ namespace Theme {
     // Apply Windows 10/11 dark mode to a window
     void EnableDarkMode(HWND hWnd);
 
+    // Show a themed warning dialog
+    void ShowWarning(HWND hParent, HINSTANCE hInst, LPCWSTR text);
+
 } // namespace Theme

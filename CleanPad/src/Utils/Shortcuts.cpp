@@ -49,10 +49,19 @@ namespace Shortcuts {
             app->ToggleAlwaysOnTop();
             return true;
 
-        case 'A':
-            // Select All (native RichEdit behaviour)
+        case 'A': {
+            // Select All, but exclude the final hidden paragraph mark.
+            // EM_SETSEL 0, -1 selects everything including the hidden mark.
+            // We get that selection range, subtract 1 from the end, and re-apply.
+            CHARRANGE cr;
             SendMessage(app->GetEditHwnd(), EM_SETSEL, 0, -1);
+            SendMessage(app->GetEditHwnd(), EM_EXGETSEL, 0, (LPARAM)&cr);
+            if (cr.cpMax > cr.cpMin) {
+                cr.cpMax -= 1;
+                SendMessage(app->GetEditHwnd(), EM_EXSETSEL, 0, (LPARAM)&cr);
+            }
             return true;
+        }
 
         case 'B':
             app->ToggleBold();

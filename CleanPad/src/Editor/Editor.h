@@ -38,6 +38,10 @@ public:
     // Delta: +1 = zoom in, -1 = zoom out.
     void AdjustZoom(int delta);
 
+    // --- Layout ---
+    // Enable or disable word wrap dynamically.
+    void SetWordWrap(bool enable);
+
 private:
     HWND m_hEdit;
     int  m_zoomNumerator;   // Current zoom % (denominator always 100)

@@ -75,5 +75,39 @@ namespace Theme {
         BOOL dark = TRUE;
         DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
     }
+    // --------------------------------------------------------
+    //  Warning Dialog Procedure
+    // --------------------------------------------------------
+    static INT_PTR CALLBACK WarningDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+        switch (msg) {
+        case WM_INITDIALOG: {
+            LPCWSTR text = reinterpret_cast<LPCWSTR>(lParam);
+            SetDlgItemTextW(hDlg, 1001 /* IDC_WARNING_TEXT */, text);
+            Theme::EnableDarkMode(hDlg);
+            // Also enable dark mode for the button if possible
+            Theme::EnableDarkMode(GetDlgItem(hDlg, IDOK));
+            return (INT_PTR)TRUE;
+        }
+        case WM_CTLCOLORDLG:
+        case WM_CTLCOLORSTATIC: {
+            HDC hdc = (HDC)wParam;
+            SetTextColor(hdc, Theme::COL_TEXT);
+            SetBkColor(hdc, Theme::COL_BG_MAIN);
+            static HBRUSH hbrBkgnd = CreateSolidBrush(Theme::COL_BG_MAIN);
+            return (INT_PTR)hbrBkgnd;
+        }
+        case WM_COMMAND:
+            if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) {
+                EndDialog(hDlg, LOWORD(wParam));
+                return (INT_PTR)TRUE;
+            }
+            break;
+        }
+        return (INT_PTR)FALSE;
+    }
+
+    void ShowWarning(HWND hParent, HINSTANCE hInst, LPCWSTR text) {
+        DialogBoxParamW(hInst, MAKEINTRESOURCEW(102 /* IDD_WARNING */), hParent, WarningDlgProc, (LPARAM)text);
+    }
 
 } // namespace Theme

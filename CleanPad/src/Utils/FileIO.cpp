@@ -20,29 +20,41 @@ namespace FileIO {
         if (hFile == INVALID_HANDLE_VALUE) return;
 
         DWORD size = GetFileSize(hFile, nullptr);
-        if (size > 0) {
-            std::vector<char> buf(size + 1, '\0');
-            DWORD bytesRead = 0;
-            if (ReadFile(hFile, buf.data(), size, &bytesRead, nullptr)) {
-                // UTF-8 → UTF-16 conversion
-                int wLen = MultiByteToWideChar(CP_UTF8, 0, buf.data(), -1, nullptr, 0);
-                std::vector<wchar_t> wBuf(wLen);
-                MultiByteToWideChar(CP_UTF8, 0, buf.data(), -1, wBuf.data(), wLen);
-
-                SetWindowText(hEdit, wBuf.data());
-
-                // Stamp the default text color so imported plain text looks right
-                CHARFORMAT2 cf = { sizeof(cf) };
-                cf.dwMask      = CFM_COLOR;
-                cf.crTextColor = Theme::COL_TEXT;
-                SendMessage(hEdit, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
-            }
-        } else {
-            SetWindowText(hEdit, L"");
+        
+        // Check 30MB limit
+        if (size > 30 * 1024 * 1024) {
+            CloseHandle(hFile);
+            Theme::ShowWarning(GetParent(hEdit), GetModuleHandle(nullptr), L"File is too large! Maximum allowed size is 30MB.");
+            return;
         }
 
-        CloseHandle(hFile);
-        currentFilePath = path;
+        // Send start notification
+        HWND hParent = GetParent(hEdit);
+        PostMessage(hParent, WM_USER_FILE_LOAD_START, 0, 0);
+
+        std::wstring wPath = path;
+
+        // Run in background
+        std::thread([hFile, size, hParent, wPath]() {
+            auto* pWBuf = new std::vector<wchar_t>();
+            DWORD bytesRead = 0;
+
+            if (size > 0) {
+                std::vector<char> buf(size + 1, '\0');
+                if (ReadFile(hFile, buf.data(), size, &bytesRead, nullptr)) {
+                    int wLen = MultiByteToWideChar(CP_UTF8, 0, buf.data(), -1, nullptr, 0);
+                    pWBuf->resize(wLen);
+                    MultiByteToWideChar(CP_UTF8, 0, buf.data(), -1, pWBuf->data(), wLen);
+                }
+            } else {
+                pWBuf->push_back(L'\0'); // Empty file
+            }
+
+            CloseHandle(hFile);
+
+            LoadResult* res = new LoadResult{ wPath, pWBuf, size };
+            PostMessage(hParent, WM_USER_FILE_LOADED, 0, (LPARAM)res);
+        }).detach();
     }
 
     // --------------------------------------------------------

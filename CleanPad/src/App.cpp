@@ -182,6 +182,57 @@ LRESULT App::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     }
 
+    // ---- File Loading Background Messages ----
+    case WM_USER_FILE_LOAD_START: {
+        m_isLoading = true;
+        m_loadProgress = 0.0f;
+        SetTimer(hWnd, 1, 16, nullptr); // ~60fps animation
+        break;
+    }
+    case WM_USER_FILE_LOADED: {
+        auto* res = reinterpret_cast<FileIO::LoadResult*>(lParam);
+        
+        // Stop animation
+        KillTimer(hWnd, 1);
+        m_isLoading = false;
+        
+        // Set text
+        SetWindowText(m_editor.GetHwnd(), res->wBuf->data());
+        
+        // Apply coloring
+        m_editor.ApplyDefaultColor();
+
+        // 3MB limit for word wrap
+        if (res->fileSize > 3 * 1024 * 1024) {
+            m_editor.SetWordWrap(false);
+        } else {
+            m_editor.SetWordWrap(true);
+        }
+
+        m_currentFilePath = res->path;
+
+        // Cleanup
+        delete res->wBuf;
+        delete res;
+
+        // Redraw top bar to clear the progress line
+        RECT rcBar = { 0, 0, 10000, TOP_BAR_HEIGHT };
+        InvalidateRect(hWnd, &rcBar, FALSE);
+        break;
+    }
+
+    case WM_TIMER: {
+        if (wParam == 1 && m_isLoading) {
+            m_loadProgress += 0.05f;
+            if (m_loadProgress > 1.0f) {
+                m_loadProgress = 0.0f; // loop animation
+            }
+            RECT rcBar = { 0, TOP_BAR_HEIGHT - 2, 10000, TOP_BAR_HEIGHT };
+            InvalidateRect(hWnd, &rcBar, FALSE);
+        }
+        break;
+    }
+
     // ---- Ctrl+Wheel zoom ----
     case WM_MOUSEWHEEL:
         OnMouseWheel(wParam);
@@ -242,6 +293,18 @@ void App::OnPaint(HWND hWnd) {
     SelectObject(hdc, Theme::g_hFontUI);
     RECT rcBtn = { 12, 0, FILE_BTN_WIDTH + 12, TOP_BAR_HEIGHT };
     DrawText(hdc, L"\x25CF", -1, &rcBtn, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+
+    // --- Loading Progress Line ---
+    if (m_isLoading) {
+        int width = ps.rcPaint.right;
+        int barWidth = width / 3;
+        int startX = (int)(m_loadProgress * (width + barWidth)) - barWidth;
+        
+        RECT rcProgress = { startX, TOP_BAR_HEIGHT - 2, startX + barWidth, TOP_BAR_HEIGHT };
+        HBRUSH hProgBr = CreateSolidBrush(Theme::COL_TEXT);
+        FillRect(hdc, &rcProgress, hProgBr);
+        DeleteObject(hProgBr);
+    }
 
     EndPaint(hWnd, &ps);
 }

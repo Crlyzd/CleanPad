@@ -31,8 +31,8 @@ bool Editor::Create(HWND hParent, HINSTANCE hInst) {
 
     m_hEdit = CreateWindowEx(
         0, MSFTEDIT_CLASS, L"",
-        WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-        ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN,
+        WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
+        ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_NOHIDESEL | ES_WANTRETURN,
         0, TOP_BAR_HEIGHT, 100, 100,   // sized properly in Resize()
         hParent, (HMENU)ID_EDIT_CONTROL, hInst, nullptr);
 
@@ -169,4 +169,16 @@ void Editor::AdjustZoom(int delta) {
     if (m_zoomNumerator < 10)  m_zoomNumerator = 10;
     if (m_zoomNumerator > 500) m_zoomNumerator = 500;
     SendMessage(m_hEdit, EM_SETZOOM, (WPARAM)m_zoomNumerator, 100);
+}
+
+// --------------------------------------------------------
+//  SetWordWrap
+//  Dynamically enable or disable word wrap.
+// --------------------------------------------------------
+void Editor::SetWordWrap(bool enable) {
+    if (enable) {
+        SendMessage(m_hEdit, EM_SETTARGETDEVICE, NULL, 0);
+    } else {
+        SendMessage(m_hEdit, EM_SETTARGETDEVICE, NULL, 1);
+    }
 }

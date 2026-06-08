@@ -47,6 +47,8 @@ private:
     bool         m_isAlwaysOnTop;
     bool         m_isDragging;
     POINT        m_dragStartPoint;
+    bool         m_isLoading = false;
+    float        m_loadProgress = 0.0f;
 
     // --- Window management ---
     bool RegisterClasses();
