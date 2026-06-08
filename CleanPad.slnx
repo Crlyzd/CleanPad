@@ -1,7 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="CleanPad/CleanPad.vcxproj" Id="16ca9f66-9ce6-4a76-a588-d218317353a4" />
-</Solution>
