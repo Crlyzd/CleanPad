@@ -76,7 +76,9 @@ void Editor::Resize(int clientWidth, int clientHeight) {
 //  effect bit so repeated presses toggle on/off.
 // --------------------------------------------------------
 void Editor::ToggleFormatting(DWORD effect) {
-    CHARFORMAT2 cf = { sizeof(cf) };
+    CHARFORMAT2 cf;
+    ZeroMemory(&cf, sizeof(cf));
+    cf.cbSize = sizeof(cf);
     cf.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
     SendMessage(m_hEdit, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 
@@ -94,7 +96,9 @@ void Editor::ToggleFormatting(DWORD effect) {
 //  after loading a file so imported plain text looks right.
 // --------------------------------------------------------
 void Editor::ApplyDefaultColor() {
-    CHARFORMAT2 cf = { sizeof(cf) };
+    CHARFORMAT2 cf;
+    ZeroMemory(&cf, sizeof(cf));
+    cf.cbSize = sizeof(cf);
     cf.dwMask      = CFM_COLOR;
     cf.crTextColor = Theme::COL_TEXT;
     SendMessage(m_hEdit, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);

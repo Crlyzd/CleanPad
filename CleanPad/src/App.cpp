@@ -1,8 +1,8 @@
 #include "App.h"
 #include "UI/Theme.h"
-#include "UI/Menu.h"
+#include "UI/Menu.h" // NOLINT
 #include "Utils/Shortcuts.h"
-#include "resource.h"
+#include "../resource.h"
 
 // ============================================================
 //  App.cpp — Application lifecycle and message handling
