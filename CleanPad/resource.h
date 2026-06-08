@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by Cleanpad v2.rc
+// Used by CleanPad.rc
 //
 #define IDI_ICON1                       101
 

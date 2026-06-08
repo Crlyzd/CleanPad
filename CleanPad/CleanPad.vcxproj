@@ -22,7 +22,7 @@
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{16ca9f66-9ce6-4a76-a588-d218317353a4}</ProjectGuid>
-    <RootNamespace>Cleanpadv2</RootNamespace>
+    <RootNamespace>CleanPad</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,15 +128,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Cleanpad.h" />
+    <ClInclude Include="CleanPad.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Cleanpad.cpp" />
+    <ClCompile Include="CleanPad.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Cleanpad v2.rc" />
+    <ResourceCompile Include="CleanPad.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico" />

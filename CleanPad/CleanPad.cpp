@@ -1,4 +1,4 @@
-#include "Cleanpad.h"
+#include "CleanPad.h"
 #include <commdlg.h>
 #include <shellapi.h>
 #include <uxtheme.h>
@@ -22,7 +22,7 @@ const COLORREF COL_MENU_SEL = RGB(80, 80, 80);
 #define IDM_SAVE   2002
 #define IDM_SAVEAS 2003
 
-Cleanpad::Cleanpad()
+CleanPad::CleanPad()
     : m_hMain(NULL), m_hEdit(NULL), m_hInst(NULL),
     m_hFontUI(NULL), m_hFontEdit(NULL),
     m_isAlwaysOnTop(false), m_isDragging(false),
@@ -43,13 +43,13 @@ Cleanpad::Cleanpad()
         CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Noto Sans");
 }
 
-Cleanpad::~Cleanpad() {
+CleanPad::~CleanPad() {
     if (m_hFontUI) DeleteObject(m_hFontUI);
     if (m_hFontEdit) DeleteObject(m_hFontEdit);
 }
 
 // --- Dark Mode Logic [cite: 6-9] ---
-void Cleanpad::EnableDarkMode(HWND hWnd) {
+void CleanPad::EnableDarkMode(HWND hWnd) {
     HMODULE hUxtheme = LoadLibraryEx(L"uxtheme.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (hUxtheme) {
         typedef DWORD(WINAPI* FnSetPreferredAppMode)(int appMode);
@@ -66,7 +66,7 @@ void Cleanpad::EnableDarkMode(HWND hWnd) {
 }
 
 // --- File I/O (Modernized) [cite: 31-50] ---
-void Cleanpad::LoadFile(LPCWSTR path) {
+void CleanPad::LoadFile(LPCWSTR path) {
     HANDLE hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
     if (hFile == INVALID_HANDLE_VALUE) return;
 
@@ -91,7 +91,7 @@ void Cleanpad::LoadFile(LPCWSTR path) {
     m_currentFilePath = path;
 }
 
-void Cleanpad::SaveFile(LPCWSTR path) {
+void CleanPad::SaveFile(LPCWSTR path) {
     HANDLE hFile = CreateFile(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) return;
 
@@ -123,7 +123,7 @@ DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LO
     return 0;
 }
 
-void Cleanpad::CopyToClipboard() {
+void CleanPad::CopyToClipboard() {
     if (!OpenClipboard(m_hMain)) return;
     EmptyClipboard();
 
@@ -171,14 +171,14 @@ void Cleanpad::CopyToClipboard() {
 }
 
 // --- UI Helpers ---
-void Cleanpad::ApplyTextColor() {
+void CleanPad::ApplyTextColor() {
     CHARFORMAT2 cf = { sizeof(cf) };
     cf.dwMask = CFM_COLOR;
     cf.crTextColor = COL_TEXT;
     SendMessage(m_hEdit, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
 }
 
-void Cleanpad::ToggleFormatting(DWORD effect) {
+void CleanPad::ToggleFormatting(DWORD effect) {
     CHARFORMAT2 cf = { sizeof(cf) };
     cf.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
     SendMessage(m_hEdit, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
@@ -192,7 +192,7 @@ void Cleanpad::ToggleFormatting(DWORD effect) {
 }
 
 // --- Shortcuts [cite: 121-132] ---
-bool Cleanpad::ProcessShortcuts(MSG* msg) {
+bool CleanPad::ProcessShortcuts(MSG* msg) {
     if (msg->message != WM_KEYDOWN) return false;
     if (msg->wParam == VK_ESCAPE) { PostQuitMessage(0); return true; }
 
@@ -243,20 +243,20 @@ bool Cleanpad::ProcessShortcuts(MSG* msg) {
 
 // --- Main Logic & Thunk ---
 
-int Cleanpad::Run(HINSTANCE hInstance, int nCmdShow) {
+int CleanPad::Run(HINSTANCE hInstance, int nCmdShow) {
     m_hInst = hInstance;
     HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 
     // Register Main Window Class
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, WndProc, 0, 0, hInstance,
                          hIcon, LoadCursor(NULL, IDC_ARROW), // <--- Uses hIcon
-                         CreateSolidBrush(COL_BG_MAIN), NULL, L"CleanpadClass",
+                         CreateSolidBrush(COL_BG_MAIN), NULL, L"CleanPadClass",
                          hIcon }; // <--- Uses hIcon (Small)
     RegisterClassExW(&wcex);
 
     // Register Menu Window Class
     WNDCLASSEXW wcexMenu = { sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW | CS_DROPSHADOW, MenuWndProc, 0, 0, hInstance,
-                             NULL, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(COL_MENU_BG), NULL, L"CleanpadMenuClass", NULL };
+                             NULL, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(COL_MENU_BG), NULL, L"CleanPadMenuClass", NULL };
     RegisterClassExW(&wcexMenu);
 
     // --- CENTERING LOGIC ---
@@ -269,7 +269,7 @@ int Cleanpad::Run(HINSTANCE hInstance, int nCmdShow) {
     // -----------------------
 
     // Create the Window at the calculated X, Y position
-    m_hMain = CreateWindowW(L"CleanpadClass", L"Cleanpad", WS_POPUP | WS_THICKFRAME | WS_VISIBLE,
+    m_hMain = CreateWindowW(L"CleanPadClass", L"CleanPad", WS_POPUP | WS_THICKFRAME | WS_VISIBLE,
         xPos, yPos, winW, winH, NULL, NULL, hInstance, this);
 
     if (!m_hMain) return FALSE;
@@ -295,15 +295,15 @@ int Cleanpad::Run(HINSTANCE hInstance, int nCmdShow) {
 }
 
 // Static wrapper to get the class instance
-LRESULT CALLBACK Cleanpad::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    Cleanpad* pApp = nullptr;
+LRESULT CALLBACK CleanPad::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    CleanPad* pApp = nullptr;
     if (message == WM_NCCREATE) {
         CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
-        pApp = (Cleanpad*)pCreate->lpCreateParams;
+        pApp = (CleanPad*)pCreate->lpCreateParams;
         SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pApp);
     }
     else {
-        pApp = (Cleanpad*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        pApp = (CleanPad*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
     }
 
     if (pApp) return pApp->HandleMessage(hWnd, message, wParam, lParam);
@@ -311,7 +311,7 @@ LRESULT CALLBACK Cleanpad::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 }
 
 // The Real Logic Handler
-LRESULT Cleanpad::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT CleanPad::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_CREATE:
         DragAcceptFiles(hWnd, TRUE);
@@ -352,7 +352,7 @@ LRESULT Cleanpad::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
         POINT clientPt = pt; ScreenToClient(hWnd, &clientPt);
         if (clientPt.y <= TOP_BAR_HEIGHT && clientPt.x <= FILE_BTN_WIDTH) {
             POINT ptMenu = { 12, TOP_BAR_HEIGHT }; ClientToScreen(hWnd, &ptMenu);
-            CreateWindowEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, L"CleanpadMenuClass", NULL, WS_POPUP | WS_VISIBLE | CS_DROPSHADOW,
+            CreateWindowEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, L"CleanPadMenuClass", NULL, WS_POPUP | WS_VISIBLE | CS_DROPSHADOW,
                 ptMenu.x, ptMenu.y, 150, 90, hWnd, NULL, m_hInst, NULL);
         }
         break;
@@ -416,7 +416,7 @@ LRESULT Cleanpad::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 }
 
 // Menu Procedure (Kept simple and static) [cite: 59-84]
-LRESULT CALLBACK Cleanpad::MenuWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK CleanPad::MenuWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     static int hoverIndex = -1;
     const wchar_t* items[] = { L"Open", L"Save", L"Save As" };
     switch (message) {
@@ -486,7 +486,7 @@ LRESULT CALLBACK Cleanpad::MenuWndProc(HWND hWnd, UINT message, WPARAM wParam, L
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void Cleanpad::PromptOpen() {
+void CleanPad::PromptOpen() {
     OPENFILENAME ofn = { sizeof(ofn) };
     wchar_t szFile[260] = { 0 };
     ofn.hwndOwner = m_hMain;
@@ -497,7 +497,7 @@ void Cleanpad::PromptOpen() {
     if (GetOpenFileName(&ofn)) LoadFile(ofn.lpstrFile);
 }
 
-void Cleanpad::PromptSaveAs() {
+void CleanPad::PromptSaveAs() {
     OPENFILENAME ofn = { sizeof(ofn) };
     wchar_t szFile[260] = { 0 };
     ofn.hwndOwner = m_hMain;

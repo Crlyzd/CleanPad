@@ -23,10 +23,10 @@
 #define TOP_BAR_HEIGHT 35
 #define FILE_BTN_WIDTH 60
 
-class Cleanpad {
+class CleanPad {
 public:
-    Cleanpad();
-    ~Cleanpad();
+    CleanPad();
+    ~CleanPad();
 
     // The only public function needed to start the app
     int Run(HINSTANCE hInstance, int nCmdShow);
